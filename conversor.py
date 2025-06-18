@@ -1,35 +1,76 @@
-#Conversor de Moedas - Estrutura Inicial + Validações
+from datetime import datetime
 
-# Tabela de taxas de conversão em relação ao Real (BRL)
+# Dicionário de taxas fixas de câmbio (base: BRL)
 taxas = {
-    "BRL": 1.00,   # Real Brasileiro (referência base)
-    "USD": 5.61,   # Dólar Americano
-    "EUR": 6.29,   # Euro
-    "GBP": 7.43,   # Libra Esterlina
-    "JPY": 0.038,  # Iene Japonês
+    "BRL": 1.00,
+    "USD": 5.61,
+    "EUR": 6.29,
+    "GBP": 7.43,
+    "JPY": 0.038,
 }
 
-# Função para exibir as moedas suportadas
+# Exibe as moedas disponíveis
 def exibir_moedas_disponiveis():
-    print("\nMoedas disponíveis:")
+    print("\n💱 Moedas disponíveis para conversão:")
     for moeda in taxas:
         print(f" - {moeda}")
 
-#Cabeçalho do programa
-print("=== CONVERSOR DE MOEDAS ===")
-exibir_moedas_disponiveis()
+# Função que realiza a conversão
+def converter_moeda(valor, origem, destino):
+    valor_em_reais = valor * taxas[origem]
+    valor_convertido = valor_em_reais / taxas[destino]
+    return round(valor_convertido, 2), valor_em_reais
 
-# ntrada de dados do usuário
-try:
-    moeda_quantia = float(input("\nDigite o valor que deseja converter: "))
-except ValueError:
-    print("Erro: Valor inválido! Digite apenas números.")
-    exit()
+# Lista para armazenar histórico local
+historico = []
 
-moeda_origem = input("Digite o código da moeda de origem: ").upper()
-moeda_destino = input("Digite o código da moeda de destino: ").upper()
+print("🌐 === CONVERSOR DE MOEDAS ===")
 
-# Validação das moedas digitadas
-if moeda_origem not in taxas or moeda_destino not in taxas:
-    print("Moeda inválida. Verifique os códigos e tente novamente.")
-    exit()
+# Loop principal do sistema
+while True:
+    exibir_moedas_disponiveis()
+    
+    try:
+        entrada = input("\n🧮 Digite o valor que deseja converter: ").replace(",", ".")
+        valor = float(entrada)
+        if valor <= 0:
+            print("⚠️ O valor deve ser maior que zero.")
+            continue
+    except ValueError:
+        print("❌ Valor inválido! Digite apenas números.")
+        continue
+
+    origem = input("🔁 Digite o código da moeda de origem: ").strip().upper()
+    destino = input("➡️ Digite o código da moeda de destino: ").strip().upper()
+
+    if origem not in taxas or destino not in taxas:
+        print("❌ Moeda inválida. Verifique os códigos disponíveis.")
+        continue
+
+    resultado, valor_em_reais = converter_moeda(valor, origem, destino)
+
+    # Captura data e hora atual
+    agora = datetime.now()
+    timestamp = agora.strftime("%d/%m/%Y %H:%M:%S")
+
+    # Resultado da conversão
+    print(f"\n✅ Conversão realizada com sucesso em {timestamp}")
+    print(f"🔎 {valor} {origem} → {valor_em_reais:.2f} BRL → {resultado} {destino}")
+    print(f"💹 Taxa utilizada: 1 {origem} = {taxas[origem]} BRL")
+    print(f"💹 Taxa destino: 1 {destino} = {taxas[destino]} BRL")
+
+    # Salva no histórico da sessão
+    historico.append(f"[{timestamp}] {valor} {origem} → {resultado} {destino}")
+
+    # Exibe últimas 5 conversões feitas
+    if historico:
+        print("\n🧾 Histórico de conversões nesta sessão:")
+        for item in historico[-5:]:
+            print(f" - {item}")
+
+    # Pergunta se deseja continuar
+    repetir = input("\n🔄 Deseja fazer outra conversão? (S/N): ").strip().upper()
+    if repetir != "S":
+        print("\n👋 Encerrando o conversor... Obrigado por usar! 💱")
+        break
+
